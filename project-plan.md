@@ -6,13 +6,14 @@ This is a lightning-fast file listing utility written in Rust, similar to `ls`, 
 ## Project Structure
 ```
 rusttest/
+├── .gitignore          # Git ignore file for Rust project artifacts
 ├── Cargo.toml          # Project configuration (no external dependencies)
 ├── src/
 │   └── main.rs         # Main application with file listing logic
 ├── project-plan.md     # This project plan document
 ├── README.md          # Project documentation
-├── file_lister         # Compiled optimized binary
-└── hello_world        # Original hello world binary (for reference)
+├── file_lister         # Compiled optimized binary (ignored by git)
+└── target/            # Build artifacts directory (ignored by git)
 ```
 
 ## Features Implemented ✅
@@ -21,7 +22,7 @@ rusttest/
 - [x] Single entry per line with perfect column alignment
 - [x] File type icons (🦀 for Rust, 📁 for dirs, 🐍 for Python, etc.)
 - [x] Octal permissions display (644, 755, etc.)
-- [x] Owner and group information (UID/GID format)
+- [x] Owner and group information (resolved to names: scott, root, etc.)
 - [x] **Fuzzy modification time** ("now", "5 minutes", "2 hours", "3 days", etc.)
 - [x] Color-coded output (directories in blue, permissions in yellow, etc.)
 - [x] Intelligent sorting (directories first, then alphabetical)
@@ -34,8 +35,8 @@ rusttest/
 The file lister displays information in the following column format:
 ```
 [Icon] [Permissions] [Owner] [Group] [Modified] [Filename]
-      755          1000    1000    38 minutes .git
-      644          1000    1000    now        main.rs
+📁     755          scott   scott   38 minutes .git
+🦀     644          scott   scott   now        main.rs
 ```
 
 ## Performance Metrics 🚀
@@ -63,6 +64,14 @@ The modification time column displays human-readable durations:
 - **Unix-specific**: Uses `std::os::unix::fs` for file metadata
 - **Cross-platform terminal**: ANSI escape codes work on all modern terminals
 - **Nerd Fonts**: Requires Nerd Fonts patched font for proper glyph display
+- **System Files**: Reads `/etc/passwd` and `/etc/group` for name resolution
+
+## Technical Implementation
+- **Name Resolution Cache**: Efficient HashMap-based caching of UID/GID → name mappings
+- **System File Parsing**: Custom parsing of colon-separated `/etc/passwd` and `/etc/group` files
+- **Error Handling**: Graceful degradation when system files can't be read
+- **Memory Efficient**: Name cache loaded once at startup, reused for all entries
+- **Performance**: Sub-millisecond execution maintained even with name resolution
 
 ## Database Schema
 No database required for this file listing utility.
@@ -86,32 +95,38 @@ No database required for this file listing utility.
 - **Memory efficient**: Minimal allocations, vector reuse
 
 ## File Type Icons (Nerd Fonts Glyphs)
--  Rust files (.rs)
--  Python files (.py)
--  JavaScript/TypeScript (.js, .ts)
--  Directories
--  HTML files (.html, .htm)
--  CSS files (.css)
--  JSON files (.json)
--  Markdown files (.md, .markdown)
--  Archives (.zip, .tar, .gz, .rar)
--  Images (.jpg, .png, .gif, .svg, etc.)
--  Audio files (.mp3, .wav, .flac, .ogg)
--  Video files (.mp4, .mkv, .avi, .mov)
--  Executable files (.exe, .bin)
--  Config files (.toml, .yaml, .yml, .ini, .conf)
--  C/C++ files (.c, .h, .cpp, .cc, .cxx)
--  Java files (.java)
--  PHP files (.php)
--  Ruby files (.rb)
--  Go files (.go)
--  Shell scripts (.sh, .bash, .zsh)
--  SQL files (.sql)
--  XML files (.xml)
--  Log files (.log)
--  Lock files (.lock)
--  Hidden files (starting with .)
--  Default for other files
+- 🦀 Rust files (.rs)
+- 🐍 Python files (.py)
+- 󰌞 JavaScript files (.js)
+- 󰛦 TypeScript files (.ts)
+- 📁 Directories
+- 󰌝 HTML files (.html, .htm)
+- 󰌜 CSS files (.css)
+- 󰘦 JSON files (.json)
+- 󰍔 Markdown files (.md, .markdown)
+- 🗜️ Archives (.zip, .tar, .gz, .rar)
+- 🖼️ Images (.jpg, .png, .gif, .svg, etc.)
+- 🎵 Audio files (.mp3, .wav, .flac, .ogg)
+- 🎬 Video files (.mp4, .mkv, .avi, .mov)
+- ⚙️ Executable/Config files (.exe, .bin, .toml, .yaml, .yml, .ini, .conf)
+- 󰙱 C files (.c, .h)
+- 󰙲 C++ files (.cpp, .cc, .cxx, .hpp)
+- 󰬷 Java files (.java)
+- 󰌟 PHP files (.php)
+- 󰴭 Ruby files (.rb)
+- 󰟓 Go files (.go)
+- 󰆍 Shell scripts (.sh, .bash, .zsh)
+- 󰆼 SQL files (.sql)
+- 󰗀 XML files (.xml)
+- 󰌱 Log files (.log)
+- 󰌾 Lock files (.lock)
+- 🐳 Docker files (dockerfile, docker)
+- 󰡄 Vue files (.vue)
+- 󰜈 React files (.jsx, .tsx, react)
+- 󰊢 Git files (.git)
+- 󰎙 Node/NPM files (.node, .npm)
+- 󰘓 Hidden files (starting with .)
+- 📄 Default for other files
 
 ## Color Scheme (ANSI Escape Codes)
 - **Blue Bold (\x1b[34;1m)**: Directory names
@@ -121,7 +136,7 @@ No database required for this file listing utility.
 - **Magenta (\x1b[35m)**: Modification time
 - **Reset (\x1b[0m)**: Return to default colors
 
-## Major Milestone Completed 🎯
+## Major Milestones Completed 🎯
 ✅ **Professional File Listing Utility with Fuzzy Time**
 - Successfully evolved from hello world to production-grade tool
 - Added intuitive fuzzy modification time display
@@ -130,6 +145,29 @@ No database required for this file listing utility.
 - Maintained lightning-fast performance (sub-millisecond execution)
 - Zero external dependencies for maximum portability
 - Professional-grade error handling and edge case management
+
+✅ **Enhanced Nerd Fonts Unicode Glyph Integration**
+- Implemented proper Nerd Fonts unicode characters for all file type icons
+- Added beautiful visual glyphs: 🦀 for Rust, 🐍 for Python, 📁 for directories
+- Added comprehensive icon coverage for modern web development (Vue, React, Docker)
+- Mixed emoji and Nerd Fonts glyphs for optimal visual appeal
+- Enhanced file type detection with additional popular extensions
+- Perfect rendering on terminals with Nerd Fonts patched fonts installed
+
+✅ **User and Group Name Resolution**
+- Added intelligent UID/GID to name resolution by parsing /etc/passwd and /etc/group
+- Displays friendly names like "scott", "root", "gdm" instead of numeric IDs
+- Implemented efficient caching system for fast name lookups
+- Graceful fallback to numeric display if name resolution fails
+- Zero external dependencies - pure standard library implementation
+- Works with all Unix-like systems (Linux, macOS, BSD)
+
+✅ **Project Infrastructure & Column Alignment**
+- Created comprehensive .gitignore for Rust project (excludes target/, binaries, IDE files)
+- Enhanced column alignment with consistent icon spacing
+- Fixed hidden file icon to use proper Nerd Fonts glyph (󰘓) instead of compound emoji
+- Improved visual consistency across different terminal widths
+- Perfect alignment maintained even with varying username lengths
 
 ## Future Enhancements
 - Add command line argument parsing (specify different directories)

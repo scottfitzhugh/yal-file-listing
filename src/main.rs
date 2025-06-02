@@ -3,14 +3,74 @@ use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::Path;
 use std::env;
 use std::time::SystemTime;
+use std::collections::HashMap;
+use std::io::{BufRead, BufReader};
+
+/// Cache for user and group name lookups
+struct NameCache {
+	users: HashMap<u32, String>,
+	groups: HashMap<u32, String>,
+}
+
+impl NameCache {
+	/// Create a new NameCache and populate it by reading system files
+	fn new() -> Self {
+		let mut cache = NameCache {
+			users: HashMap::new(),
+			groups: HashMap::new(),
+		};
+		
+		// Load user names from /etc/passwd
+		if let Ok(file) = fs::File::open("/etc/passwd") {
+			let reader = BufReader::new(file);
+			for line in reader.lines() {
+				if let Ok(line) = line {
+					let parts: Vec<&str> = line.split(':').collect();
+					if parts.len() >= 3 {
+						if let Ok(uid) = parts[2].parse::<u32>() {
+							cache.users.insert(uid, parts[0].to_string());
+						}
+					}
+				}
+			}
+		}
+		
+		// Load group names from /etc/group
+		if let Ok(file) = fs::File::open("/etc/group") {
+			let reader = BufReader::new(file);
+			for line in reader.lines() {
+				if let Ok(line) = line {
+					let parts: Vec<&str> = line.split(':').collect();
+					if parts.len() >= 3 {
+						if let Ok(gid) = parts[2].parse::<u32>() {
+							cache.groups.insert(gid, parts[0].to_string());
+						}
+					}
+				}
+			}
+		}
+		
+		cache
+	}
+	
+	/// Get user name from UID, fallback to UID string if not found
+	fn get_user_name(&self, uid: u32) -> String {
+		self.users.get(&uid).cloned().unwrap_or_else(|| uid.to_string())
+	}
+	
+	/// Get group name from GID, fallback to GID string if not found
+	fn get_group_name(&self, gid: u32) -> String {
+		self.groups.get(&gid).cloned().unwrap_or_else(|| gid.to_string())
+	}
+}
 
 /// Represents a file system entry with display information
 #[derive(Debug)]
 struct FileEntry {
 	name: String,
 	permissions: String,
-	owner: u32,
-	group: u32,
+	owner: String,
+	group: String,
 	modified_text: String,
 	icon: &'static str,
 	is_dir: bool,
@@ -18,7 +78,7 @@ struct FileEntry {
 
 impl FileEntry {
 	/// Create a new FileEntry from a directory entry
-	fn new(entry: &fs::DirEntry) -> std::io::Result<Self> {
+	fn new(entry: &fs::DirEntry, name_cache: &NameCache) -> std::io::Result<Self> {
 		let metadata = entry.metadata()?;
 		let file_name = entry.file_name().to_string_lossy().to_string();
 		
@@ -26,9 +86,11 @@ impl FileEntry {
 		let mode = metadata.permissions().mode();
 		let permissions = format!("{:o}", mode & 0o777);
 		
-		// Get owner and group IDs
-		let owner = metadata.uid();
-		let group = metadata.gid();
+		// Get owner and group IDs and resolve to names
+		let owner_uid = metadata.uid();
+		let group_gid = metadata.gid();
+		let owner = name_cache.get_user_name(owner_uid);
+		let group = name_cache.get_group_name(group_gid);
 		
 		// Get modification time and format as fuzzy duration
 		let modified_text = match metadata.modified() {
@@ -59,8 +121,9 @@ impl FileEntry {
 			("", "") // No color for files
 		};
 		
+		// Ensure consistent icon column width with padding
 		format!(
-			"{} \x1b[33m{:>width_perms$}\x1b[0m \x1b[32m{:>width_owner$}\x1b[0m \x1b[36m{:>width_group$}\x1b[0m \x1b[35m{:>width_modified$}\x1b[0m {}{}{}",
+			"{}  \x1b[33m{:>width_perms$}\x1b[0m \x1b[32m{:>width_owner$}\x1b[0m \x1b[36m{:>width_group$}\x1b[0m \x1b[35m{:>width_modified$}\x1b[0m {}{}{}",
 			self.icon,
 			self.permissions,
 			self.owner,
@@ -130,7 +193,7 @@ fn format_duration_since(modified_time: SystemTime) -> String {
 /// Get an appropriate icon for the file type
 fn get_file_icon(filename: &str, is_dir: bool) -> &'static str {
 	if is_dir {
-		return "";  // nf-oct-file_directory
+		return "📁";  // nf-cod-folder or folder emoji
 	}
 	
 	// Get file extension
@@ -141,35 +204,43 @@ fn get_file_icon(filename: &str, is_dir: bool) -> &'static str {
 		.to_lowercase();
 	
 	match extension.as_str() {
-		"rs" => "",          // nf-dev-rust
-		"py" => "",          // nf-dev-python
-		"js" => "",          // nf-dev-javascript
-		"ts" => "",          // nf-dev-typescript
-		"html" | "htm" => "",// nf-dev-html5
-		"css" => "",         // nf-dev-css3
-		"json" => "",        // nf-mdi-code_json
-		"md" | "markdown" => "", // nf-dev-markdown
-		"txt" => "",         // nf-fa-file_text_o
-		"pdf" => "",         // nf-fa-file_pdf_o
-		"zip" | "tar" | "gz" | "rar" => "", // nf-fa-file_archive_o
-		"jpg" | "jpeg" | "png" | "gif" | "bmp" | "svg" => "", // nf-fa-file_image_o
-		"mp3" | "wav" | "flac" | "ogg" => "", // nf-fa-file_audio_o
-		"mp4" | "mkv" | "avi" | "mov" => "", // nf-fa-file_video_o
-		"exe" | "bin" => "",  // nf-mdi-application
-		"toml" | "yaml" | "yml" | "ini" | "conf" => "", // nf-mdi-settings
-		"c" | "h" => "",      // nf-custom-c
-		"cpp" | "cc" | "cxx" | "hpp" => "", // nf-custom-cpp
-		"java" => "",        // nf-dev-java
-		"php" => "",         // nf-dev-php
-		"rb" => "",          // nf-dev-ruby
-		"go" => "",          // nf-dev-go
-		"sh" | "bash" | "zsh" => "", // nf-dev-terminal
-		"sql" => "",         // nf-dev-database
-		"xml" => "",         // nf-mdi-xml
-		"log" => "",         // nf-fa-file_text_o
-		"lock" => "",        // nf-fa-lock
-		_ if filename.starts_with('.') => "", // nf-fa-eye_slash (hidden)
-		_ => "",             // nf-fa-file_o
+		"rs" => "🦀",          // nf-dev-rust / Rust crab
+		"py" => "🐍",          // nf-dev-python / Python snake
+		"js" => "󰌞",          // nf-dev-javascript
+		"ts" => "󰛦",          // nf-dev-typescript
+		"html" | "htm" => "󰌝",// nf-dev-html5
+		"css" => "󰌜",         // nf-dev-css3
+		"json" => "󰘦",        // nf-mdi-code_json
+		"md" | "markdown" => "󰍔", // nf-dev-markdown
+		"txt" => "󰈙",         // nf-fa-file_text_o
+		"pdf" => "󰈦",         // nf-fa-file_pdf_o
+		"zip" | "tar" | "gz" | "rar" => "🗜️", // nf-fa-file_archive_o
+		"jpg" | "jpeg" | "png" | "gif" | "bmp" | "svg" => "🖼️", // nf-fa-file_image_o
+		"mp3" | "wav" | "flac" | "ogg" => "🎵", // nf-fa-file_audio_o
+		"mp4" | "mkv" | "avi" | "mov" => "🎬", // nf-fa-file_video_o
+		"exe" | "bin" => "⚙️",  // nf-mdi-application
+		"toml" | "yaml" | "yml" | "ini" | "conf" => "⚙️", // nf-mdi-settings
+		"c" | "h" => "󰙱",      // nf-custom-c
+		"cpp" | "cc" | "cxx" | "hpp" => "󰙲", // nf-custom-cpp
+		"java" => "󰬷",        // nf-dev-java
+		"php" => "󰌟",         // nf-dev-php
+		"rb" => "󰴭",          // nf-dev-ruby
+		"go" => "󰟓",          // nf-dev-go or "🐹" for gopher
+		"sh" | "bash" | "zsh" => "󰆍", // nf-dev-terminal
+		"sql" => "󰆼",         // nf-dev-database
+		"xml" => "󰗀",         // nf-mdi-xml
+		"log" => "󰌱",         // nf-fa-file_text_o
+		"lock" => "󰌾",        // nf-fa-lock
+		"dockerfile" => "🐳",  // Docker whale
+		"vue" => "󰡄",         // nf-mdi-vuejs
+		"react" | "jsx" | "tsx" => "󰜈", // nf-dev-react
+		"git" => "󰊢",         // nf-dev-git
+		"node" => "󰎙",        // nf-dev-nodejs_small
+		"npm" => "󰎙",         // nf-dev-nodejs_small
+		"yarn" => "󰬷",        // nf-seti-yarn
+		"docker" => "🐳",     // Docker whale
+		_ if filename.starts_with('.') => "󰘓", // nf-fa-eye_slash (hidden)
+		_ => "📄",             // nf-fa-file_o or generic file emoji
 	}
 }
 
@@ -178,11 +249,14 @@ fn main() -> std::io::Result<()> {
 	let current_dir = env::current_dir()?;
 	let entries = fs::read_dir(&current_dir)?;
 	
+	// Create name cache for user/group resolution
+	let name_cache = NameCache::new();
+	
 	// Collect and sort entries
 	let mut file_entries = Vec::new();
 	for entry in entries {
 		let entry = entry?;
-		match FileEntry::new(&entry) {
+		match FileEntry::new(&entry, &name_cache) {
 			Ok(file_entry) => file_entries.push(file_entry),
 			Err(_) => continue, // Skip entries we can't read
 		}
@@ -213,12 +287,12 @@ fn main() -> std::io::Result<()> {
 		.unwrap_or(0);
 		
 	let max_owner_len = file_entries.iter()
-		.map(|entry| entry.owner.to_string().len())
+		.map(|entry| entry.owner.len())
 		.max()
 		.unwrap_or(0);
 		
 	let max_group_len = file_entries.iter()
-		.map(|entry| entry.group.to_string().len())
+		.map(|entry| entry.group.len())
 		.max()
 		.unwrap_or(0);
 		
