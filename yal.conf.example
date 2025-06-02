@@ -1,9 +1,11 @@
 # YAL (Yet Another Lister) Configuration File
 # This file demonstrates all available configuration options
-# Place this file in one of these locations:
-#   - $XDG_CONFIG_HOME/yal.conf
-#   - ~/.config/yal.conf  
-#   - ~/.yal.conf
+# Place this file in one of these locations (in order of precedence):
+#   - $XDG_CONFIG_HOME/yal/yal.conf (preferred XDG pattern)
+#   - $XDG_CONFIG_HOME/yal.conf (fallback)
+#   - ~/.config/yal/yal.conf (preferred standard location)
+#   - ~/.config/yal.conf (fallback)
+#   - ~/.yal.conf (traditional dotfile)
 #   - ./yal.conf (current directory)
 
 # ===========================================

@@ -79,10 +79,12 @@ The modification time column displays human-readable durations:
 ## Configuration Options
 
 ### File Locations (in order of precedence)
-1. `$XDG_CONFIG_HOME/yal.conf`
-2. `~/.config/yal.conf`
-3. `~/.yal.conf`
-4. `./yal.conf` (current directory)
+1. `$XDG_CONFIG_HOME/yal/yal.conf` (preferred XDG pattern)
+2. `$XDG_CONFIG_HOME/yal.conf` (fallback)
+3. `~/.config/yal/yal.conf` (preferred standard location)
+4. `~/.config/yal.conf` (fallback)
+5. `~/.yal.conf` (traditional dotfile)
+6. `./yal.conf` (current directory)
 
 ### Available Settings
 - **show_icons**: Display file type icons (default: true)

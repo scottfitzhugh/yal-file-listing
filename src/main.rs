@@ -65,8 +65,17 @@ impl Config {
 	/// Find configuration file in standard locations
 	fn find_config_file() -> Option<PathBuf> {
 		let config_name = "yal.conf";
+		let app_name = "yal";
 		
-		// Check XDG_CONFIG_HOME or ~/.config
+		// Check XDG_CONFIG_HOME/yal/yal.conf
+		if let Ok(xdg_config) = env::var("XDG_CONFIG_HOME") {
+			let path = PathBuf::from(xdg_config).join(app_name).join(config_name);
+			if path.exists() {
+				return Some(path);
+			}
+		}
+		
+		// Check XDG_CONFIG_HOME/yal.conf (fallback)
 		if let Ok(xdg_config) = env::var("XDG_CONFIG_HOME") {
 			let path = PathBuf::from(xdg_config).join(config_name);
 			if path.exists() {
@@ -74,7 +83,15 @@ impl Config {
 			}
 		}
 		
-		// Check ~/.config/yal.conf
+		// Check ~/.config/yal/yal.conf (preferred)
+		if let Ok(home) = env::var("HOME") {
+			let path = PathBuf::from(home).join(".config").join(app_name).join(config_name);
+			if path.exists() {
+				return Some(path);
+			}
+		}
+		
+		// Check ~/.config/yal.conf (fallback)
 		if let Ok(home) = env::var("HOME") {
 			let path = PathBuf::from(home).join(".config").join(config_name);
 			if path.exists() {
