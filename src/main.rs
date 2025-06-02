@@ -2,6 +2,7 @@ use std::fs;
 use std::os::unix::fs::{MetadataExt, PermissionsExt};
 use std::path::Path;
 use std::env;
+use std::time::SystemTime;
 
 /// Represents a file system entry with display information
 #[derive(Debug)]
@@ -10,6 +11,7 @@ struct FileEntry {
 	permissions: String,
 	owner: u32,
 	group: u32,
+	modified_text: String,
 	icon: &'static str,
 	is_dir: bool,
 }
@@ -28,6 +30,12 @@ impl FileEntry {
 		let owner = metadata.uid();
 		let group = metadata.gid();
 		
+		// Get modification time and format as fuzzy duration
+		let modified_text = match metadata.modified() {
+			Ok(modified_time) => format_duration_since(modified_time),
+			Err(_) => "unknown".to_string(),
+		};
+		
 		let is_dir = metadata.is_dir();
 		let icon = get_file_icon(&file_name, is_dir);
 		
@@ -36,13 +44,14 @@ impl FileEntry {
 			permissions,
 			owner,
 			group,
+			modified_text,
 			icon,
 			is_dir,
 		})
 	}
 	
 	/// Format this entry for display with proper column alignment
-	fn format_display(&self, max_perms_len: usize, max_owner_len: usize, max_group_len: usize) -> String {
+	fn format_display(&self, max_perms_len: usize, max_owner_len: usize, max_group_len: usize, max_modified_len: usize) -> String {
 		// Use ANSI escape codes for colors
 		let (name_color, reset) = if self.is_dir {
 			("\x1b[34;1m", "\x1b[0m") // Blue bold for directories
@@ -51,18 +60,70 @@ impl FileEntry {
 		};
 		
 		format!(
-			"{} \x1b[33m{:>width_perms$}\x1b[0m \x1b[32m{:>width_owner$}\x1b[0m \x1b[36m{:>width_group$}\x1b[0m {}{}{}",
+			"{} \x1b[33m{:>width_perms$}\x1b[0m \x1b[32m{:>width_owner$}\x1b[0m \x1b[36m{:>width_group$}\x1b[0m \x1b[35m{:>width_modified$}\x1b[0m {}{}{}",
 			self.icon,
 			self.permissions,
 			self.owner,
 			self.group,
+			self.modified_text,
 			name_color,
 			self.name,
 			reset,
 			width_perms = max_perms_len,
 			width_owner = max_owner_len,
-			width_group = max_group_len
+			width_group = max_group_len,
+			width_modified = max_modified_len
 		)
+	}
+}
+
+/// Format duration since a given time into human-readable fuzzy text
+fn format_duration_since(modified_time: SystemTime) -> String {
+	let now = SystemTime::now();
+	
+	let duration = match now.duration_since(modified_time) {
+		Ok(d) => d,
+		Err(_) => return "future".to_string(), // File modified in the future?
+	};
+	
+	let seconds = duration.as_secs();
+	
+	match seconds {
+		0..=59 => {
+			if seconds == 0 { "now".to_string() }
+			else if seconds == 1 { "1 second".to_string() }
+			else { format!("{} seconds", seconds) }
+		},
+		60..=3599 => {
+			let minutes = seconds / 60;
+			if minutes == 1 { "1 minute".to_string() }
+			else { format!("{} minutes", minutes) }
+		},
+		3600..=86399 => {
+			let hours = seconds / 3600;
+			if hours == 1 { "1 hour".to_string() }
+			else { format!("{} hours", hours) }
+		},
+		86400..=604799 => {
+			let days = seconds / 86400;
+			if days == 1 { "1 day".to_string() }
+			else { format!("{} days", days) }
+		},
+		604800..=2629743 => {
+			let weeks = seconds / 604800;
+			if weeks == 1 { "1 week".to_string() }
+			else { format!("{} weeks", weeks) }
+		},
+		2629744..=31556925 => {
+			let months = seconds / 2629744; // Approximate month
+			if months == 1 { "1 month".to_string() }
+			else { format!("{} months", months) }
+		},
+		_ => {
+			let years = seconds / 31556926; // Approximate year
+			if years == 1 { "1 year".to_string() }
+			else { format!("{} years", years) }
+		}
 	}
 }
 
@@ -148,10 +209,15 @@ fn main() -> std::io::Result<()> {
 		.map(|entry| entry.group.to_string().len())
 		.max()
 		.unwrap_or(0);
+		
+	let max_modified_len = file_entries.iter()
+		.map(|entry| entry.modified_text.len())
+		.max()
+		.unwrap_or(0);
 	
 	// Display entries one per line with aligned columns
 	for entry in &file_entries {
-		println!("{}", entry.format_display(max_perms_len, max_owner_len, max_group_len));
+		println!("{}", entry.format_display(max_perms_len, max_owner_len, max_group_len, max_modified_len));
 	}
 	
 	Ok(())
