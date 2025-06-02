@@ -33,11 +33,11 @@ rusttest/
 - [x] Project documentation
 
 ## Column Layout
-The file lister displays information in the following column format:
+The file lister displays information in the following left-aligned column format:
 ```
 [Icon] [Permissions] [Owner] [Group] [Modified] [Filename]
-📁     755          scott   scott   38 minutes .git
-🦀     644          scott   scott   now        main.rs
+📁   755 scott scott 38 minutes .git
+🦀   644 scott scott now        main.rs
 ```
 
 ## Performance Metrics 🚀
@@ -206,6 +206,12 @@ No database required for this file listing utility.
 - Column alignment vs simple list format options
 - Sensible defaults when no configuration file is present
 - Comprehensive example configuration file with documentation
+
+✅ **Enhanced Column Alignment**
+- Improved column formatting with left-alignment for better readability
+- Consistent spacing and padding across all data columns
+- Optimized visual layout for varying content widths
+- Perfect alignment maintained across different directory contents
 
 ## Future Enhancements
 - Add command line argument parsing (specify different directories)

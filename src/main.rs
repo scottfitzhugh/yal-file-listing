@@ -280,10 +280,10 @@ impl FileEntry {
 		for column in &config.column_order {
 			match column.as_str() {
 				"icon" if config.show_icons => parts.push(format!("{}  ", self.icon)),
-				"permissions" if config.show_permissions => parts.push(format!("\x1b[33m{:>width$}\x1b[0m", self.permissions, width = max_perms_len)),
-				"owner" if config.show_owner => parts.push(format!("\x1b[32m{:>width$}\x1b[0m", self.owner, width = max_owner_len)),
-				"group" if config.show_group => parts.push(format!("\x1b[36m{:>width$}\x1b[0m", self.group, width = max_group_len)),
-				"modified" if config.show_modified => parts.push(format!("\x1b[35m{:>width$}\x1b[0m", self.modified_text, width = max_modified_len)),
+				"permissions" if config.show_permissions => parts.push(format!("\x1b[33m{:<width$}\x1b[0m", self.permissions, width = max_perms_len)),
+				"owner" if config.show_owner => parts.push(format!("\x1b[32m{:<width$}\x1b[0m", self.owner, width = max_owner_len)),
+				"group" if config.show_group => parts.push(format!("\x1b[36m{:<width$}\x1b[0m", self.group, width = max_group_len)),
+				"modified" if config.show_modified => parts.push(format!("\x1b[35m{:<width$}\x1b[0m", self.modified_text, width = max_modified_len)),
 				"name" => parts.push(format!("{}{}{}", name_color, self.name, reset)),
 				_ => {} // Skip unknown or disabled columns
 			}
