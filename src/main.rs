@@ -130,7 +130,7 @@ fn format_duration_since(modified_time: SystemTime) -> String {
 /// Get an appropriate icon for the file type
 fn get_file_icon(filename: &str, is_dir: bool) -> &'static str {
 	if is_dir {
-		return "📁";
+		return "";  // nf-oct-file_directory
 	}
 	
 	// Get file extension
@@ -141,23 +141,35 @@ fn get_file_icon(filename: &str, is_dir: bool) -> &'static str {
 		.to_lowercase();
 	
 	match extension.as_str() {
-		"rs" => "🦀",
-		"py" => "🐍",
-		"js" | "ts" => "⚡",
-		"html" | "htm" => "🌐",
-		"css" => "🎨",
-		"json" => "📊",
-		"md" | "markdown" => "📝",
-		"txt" => "📄",
-		"pdf" => "📕",
-		"zip" | "tar" | "gz" | "rar" => "📦",
-		"jpg" | "jpeg" | "png" | "gif" | "bmp" | "svg" => "🖼️",
-		"mp3" | "wav" | "flac" | "ogg" => "🎵",
-		"mp4" | "mkv" | "avi" | "mov" => "🎬",
-		"exe" | "bin" => "⚙️",
-		"toml" | "yaml" | "yml" | "ini" | "conf" => "⚙️",
-		_ if filename.starts_with('.') => "👻",
-		_ => "📄",
+		"rs" => "",          // nf-dev-rust
+		"py" => "",          // nf-dev-python
+		"js" => "",          // nf-dev-javascript
+		"ts" => "",          // nf-dev-typescript
+		"html" | "htm" => "",// nf-dev-html5
+		"css" => "",         // nf-dev-css3
+		"json" => "",        // nf-mdi-code_json
+		"md" | "markdown" => "", // nf-dev-markdown
+		"txt" => "",         // nf-fa-file_text_o
+		"pdf" => "",         // nf-fa-file_pdf_o
+		"zip" | "tar" | "gz" | "rar" => "", // nf-fa-file_archive_o
+		"jpg" | "jpeg" | "png" | "gif" | "bmp" | "svg" => "", // nf-fa-file_image_o
+		"mp3" | "wav" | "flac" | "ogg" => "", // nf-fa-file_audio_o
+		"mp4" | "mkv" | "avi" | "mov" => "", // nf-fa-file_video_o
+		"exe" | "bin" => "",  // nf-mdi-application
+		"toml" | "yaml" | "yml" | "ini" | "conf" => "", // nf-mdi-settings
+		"c" | "h" => "",      // nf-custom-c
+		"cpp" | "cc" | "cxx" | "hpp" => "", // nf-custom-cpp
+		"java" => "",        // nf-dev-java
+		"php" => "",         // nf-dev-php
+		"rb" => "",          // nf-dev-ruby
+		"go" => "",          // nf-dev-go
+		"sh" | "bash" | "zsh" => "", // nf-dev-terminal
+		"sql" => "",         // nf-dev-database
+		"xml" => "",         // nf-mdi-xml
+		"log" => "",         // nf-fa-file_text_o
+		"lock" => "",        // nf-fa-lock
+		_ if filename.starts_with('.') => "", // nf-fa-eye_slash (hidden)
+		_ => "",             // nf-fa-file_o
 	}
 }
 
@@ -186,12 +198,12 @@ fn main() -> std::io::Result<()> {
 	});
 	
 	if file_entries.is_empty() {
-		println!("📭 Empty directory");
+		println!(" Empty directory");
 		return Ok(());
 	}
 	
 	// Display header
-	println!("📂 {} ({} items)", current_dir.display(), file_entries.len());
+	println!(" {} ({} items)", current_dir.display(), file_entries.len());
 	println!();
 	
 	// Calculate column widths for perfect alignment

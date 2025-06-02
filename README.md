@@ -7,7 +7,7 @@ A lightning-fast file listing utility written in Rust, inspired by `ls`, `lsd`, 
 This high-performance file listing tool provides:
 - **Lightning-fast directory traversal** optimized for speed
 - **Beautiful grid layout** that adapts to your terminal width
-- **File type icons** for instant visual recognition (🦀 for Rust, 📁 for directories, etc.)
+- **File type icons** using Nerd Fonts glyphs for instant visual recognition ( for Rust,  for directories, etc.)
 - **Octal permissions display** (644, 755, etc.)
 - **Owner and group information** with color coding
 - **Intelligent sorting** (directories first, then alphabetical)
@@ -18,6 +18,7 @@ This high-performance file listing tool provides:
 - Rust programming language (latest stable version recommended)
 - Cargo (comes with Rust installation)
 - Unix-like system (Linux, macOS) for file permissions
+- **Nerd Fonts** installed for proper icon display (recommended: FiraCode Nerd Font, JetBrains Mono Nerd Font)
 
 ## Installation
 
@@ -43,13 +44,13 @@ The compiled binary will be available at `target/release/rusttest`
 ## Features
 
 ### 🎨 Visual Elements
-- **File Type Icons**: Instant recognition with emojis
-  - 🦀 Rust files (.rs)
-  - 🐍 Python files (.py) 
-  - ⚡ JavaScript/TypeScript (.js, .ts)
-  - 📁 Directories
-  - 📝 Markdown files (.md)
-  - 🖼️ Images (.jpg, .png, .gif, etc.)
+- **File Type Icons**: Instant recognition with Nerd Fonts glyphs
+  -  Rust files (.rs)
+  -  Python files (.py) 
+  -  JavaScript/TypeScript (.js, .ts)
+  -  Directories
+  -  Markdown files (.md)
+  -  Images (.jpg, .png, .gif, etc.)
   - And many more!
 
 ### 🎯 Performance
@@ -67,11 +68,11 @@ The compiled binary will be available at `target/release/rusttest`
 ## Example Output
 
 ```
-📂 /home/user/projects/rusttest (6 items)
+ /home/user/projects/rusttest (6 items)
 
-📁 755 user user src/           🦀 644 user user main.rs        
-⚙️ 644 user user Cargo.toml    📝 644 user user README.md      
-📝 644 user user project-plan.md   ⚙️ 755 user user hello_world
+ 755 user user src/            644 user user main.rs        
+ 644 user user Cargo.toml     644 user user README.md      
+ 644 user user project-plan.md    755 user user hello_world
 ```
 
 ## Project Structure

@@ -34,8 +34,8 @@ rusttest/
 The file lister displays information in the following column format:
 ```
 [Icon] [Permissions] [Owner] [Group] [Modified] [Filename]
-📁     755          1000    1000    38 minutes .git
-🦀     644          1000    1000    now        main.rs
+      755          1000    1000    38 minutes .git
+      644          1000    1000    now        main.rs
 ```
 
 ## Performance Metrics 🚀
@@ -62,15 +62,18 @@ The modification time column displays human-readable durations:
 - **Standard Library Only**: No external dependencies required
 - **Unix-specific**: Uses `std::os::unix::fs` for file metadata
 - **Cross-platform terminal**: ANSI escape codes work on all modern terminals
+- **Nerd Fonts**: Requires Nerd Fonts patched font for proper glyph display
 
 ## Database Schema
 No database required for this file listing utility.
 
 ## Build Instructions
 1. Ensure Rust is installed on your system
-2. Run `rustc src/main.rs -o file_lister` to compile directly
-3. Run `./file_lister` to execute and list current directory
-4. Alternative: Use `cargo build` if cargo proxy issues are resolved
+2. Install a Nerd Fonts patched font (e.g., FiraCode Nerd Font, JetBrains Mono Nerd Font)
+3. Configure your terminal to use the Nerd Fonts patched font
+4. Run `rustc src/main.rs -o file_lister` to compile directly
+5. Run `./file_lister` to execute and list current directory
+6. Alternative: Use `cargo build` if cargo proxy issues are resolved
 
 ## Performance Features
 - **Lightning Fast**: 0.002s execution time - faster than blink of an eye
@@ -82,22 +85,33 @@ No database required for this file listing utility.
 - **Error handling**: Gracefully skips unreadable files without crashing
 - **Memory efficient**: Minimal allocations, vector reuse
 
-## File Type Icons
-- 🦀 Rust files (.rs)
-- 🐍 Python files (.py)
-- ⚡ JavaScript/TypeScript (.js, .ts)
-- 📁 Directories
-- 🌐 HTML files (.html, .htm)
-- 🎨 CSS files (.css)
-- 📊 JSON files (.json)
-- 📝 Markdown files (.md, .markdown)
-- 📦 Archives (.zip, .tar, .gz, .rar)
-- 🖼️ Images (.jpg, .png, .gif, .svg, etc.)
-- 🎵 Audio files (.mp3, .wav, .flac, .ogg)
-- 🎬 Video files (.mp4, .mkv, .avi, .mov)
-- ⚙️ Config/executable files
-- 👻 Hidden files (starting with .)
-- 📄 Default for other files
+## File Type Icons (Nerd Fonts Glyphs)
+-  Rust files (.rs)
+-  Python files (.py)
+-  JavaScript/TypeScript (.js, .ts)
+-  Directories
+-  HTML files (.html, .htm)
+-  CSS files (.css)
+-  JSON files (.json)
+-  Markdown files (.md, .markdown)
+-  Archives (.zip, .tar, .gz, .rar)
+-  Images (.jpg, .png, .gif, .svg, etc.)
+-  Audio files (.mp3, .wav, .flac, .ogg)
+-  Video files (.mp4, .mkv, .avi, .mov)
+-  Executable files (.exe, .bin)
+-  Config files (.toml, .yaml, .yml, .ini, .conf)
+-  C/C++ files (.c, .h, .cpp, .cc, .cxx)
+-  Java files (.java)
+-  PHP files (.php)
+-  Ruby files (.rb)
+-  Go files (.go)
+-  Shell scripts (.sh, .bash, .zsh)
+-  SQL files (.sql)
+-  XML files (.xml)
+-  Log files (.log)
+-  Lock files (.lock)
+-  Hidden files (starting with .)
+-  Default for other files
 
 ## Color Scheme (ANSI Escape Codes)
 - **Blue Bold (\x1b[34;1m)**: Directory names
