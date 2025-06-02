@@ -9,9 +9,10 @@ rusttest/
 ├── .gitignore          # Git ignore file for Rust project artifacts
 ├── Cargo.toml          # Project configuration (no external dependencies)
 ├── src/
-│   └── main.rs         # Main application with file listing logic
+│   └── main.rs         # Main application with configuration and file listing logic
 ├── project-plan.md     # This project plan document
 ├── README.md          # Project documentation
+├── yal.conf.example    # Example configuration file with all settings documented
 ├── file_lister         # Compiled optimized binary (ignored by git)
 └── target/            # Build artifacts directory (ignored by git)
 ```
@@ -69,9 +70,35 @@ The modification time column displays human-readable durations:
 ## Technical Implementation
 - **Name Resolution Cache**: Efficient HashMap-based caching of UID/GID → name mappings
 - **System File Parsing**: Custom parsing of colon-separated `/etc/passwd` and `/etc/group` files
+- **Configuration System**: XDG-compliant config file discovery and key=value parsing
+- **Dynamic Layout Engine**: Configurable column ordering and formatting
 - **Error Handling**: Graceful degradation when system files can't be read
 - **Memory Efficient**: Name cache loaded once at startup, reused for all entries
-- **Performance**: Sub-millisecond execution maintained even with name resolution
+- **Performance**: Sub-millisecond execution maintained even with configuration processing
+
+## Configuration Options
+
+### File Locations (in order of precedence)
+1. `$XDG_CONFIG_HOME/yal.conf`
+2. `~/.config/yal.conf`
+3. `~/.yal.conf`
+4. `./yal.conf` (current directory)
+
+### Available Settings
+- **show_icons**: Display file type icons (default: true)
+- **show_permissions**: Display octal permissions (default: true)
+- **show_owner**: Display owner names (default: true)
+- **show_group**: Display group names (default: true)
+- **show_modified**: Display modification time (default: true)
+- **use_fuzzy_time**: Use fuzzy time vs absolute timestamps (default: true)
+- **column_format**: Use aligned columns vs simple list (default: true)
+- **column_order**: Order of columns (default: icon,permissions,owner,group,modified,name)
+- **sort_dirs_first**: Sort directories before files (default: true)
+- **show_hidden**: Show hidden files starting with '.' (default: false)
+- **long_format**: Reserved for future enhanced display modes (default: false)
+
+### Boolean Values
+Accepts: `true/false`, `yes/no`, `1/0`, `on/off`, `enabled/disabled`
 
 ## Database Schema
 No database required for this file listing utility.
@@ -168,6 +195,17 @@ No database required for this file listing utility.
 - Fixed hidden file icon to use proper Nerd Fonts glyph (󰘓) instead of compound emoji
 - Improved visual consistency across different terminal widths
 - Perfect alignment maintained even with varying username lengths
+
+✅ **Comprehensive Configuration System**
+- Implemented full configuration file support following XDG standards
+- Configuration file locations: `$XDG_CONFIG_HOME/yal.conf`, `~/.config/yal.conf`, `~/.yal.conf`, `./yal.conf`
+- Configurable column display (icons, permissions, owner, group, modified time)
+- Customizable time format (fuzzy vs absolute timestamps)
+- Flexible column ordering and layout options
+- Hidden file visibility toggle
+- Column alignment vs simple list format options
+- Sensible defaults when no configuration file is present
+- Comprehensive example configuration file with documentation
 
 ## Future Enhancements
 - Add command line argument parsing (specify different directories)

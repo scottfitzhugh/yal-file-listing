@@ -49,4 +49,8 @@ Thumbs.db
 .env.*.local
 
 # Test artifacts
-tests/tmp/ 
+tests/tmp/
+
+# Configuration files (but keep examples)
+yal.conf
+.yal.conf 

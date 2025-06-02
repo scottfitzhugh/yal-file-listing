@@ -1,0 +1,102 @@
+# YAL (Yet Another Lister) Configuration File
+# This file demonstrates all available configuration options
+# Place this file in one of these locations:
+#   - $XDG_CONFIG_HOME/yal.conf
+#   - ~/.config/yal.conf  
+#   - ~/.yal.conf
+#   - ./yal.conf (current directory)
+
+# ===========================================
+# COLUMN DISPLAY SETTINGS
+# ===========================================
+
+# Show file type icons (requires Nerd Fonts)
+# Values: true, false, yes, no, 1, 0, on, off, enabled, disabled
+show_icons = true
+
+# Show file permissions in octal format (e.g., 755, 644)
+show_permissions = true
+
+# Show file owner names (resolved from UID)
+show_owner = true
+
+# Show file group names (resolved from GID)  
+show_group = true
+
+# Show modification time information
+show_modified = true
+
+# ===========================================
+# TIME FORMAT SETTINGS
+# ===========================================
+
+# Use fuzzy time format (e.g., "5 minutes", "2 hours") vs absolute timestamps
+# When false, shows simplified timestamp format like "123d 14h:35m"
+use_fuzzy_time = true
+
+# ===========================================
+# LAYOUT AND FORMATTING
+# ===========================================
+
+# Use column-aligned format vs simple space-separated list
+# When true: perfect column alignment for readability
+# When false: simple list format (faster, more compact)
+column_format = true
+
+# Order of columns to display (comma-separated)
+# Available columns: icon, permissions, owner, group, modified, name
+# Note: 'name' should typically be last for best readability
+column_order = icon,permissions,owner,group,modified,name
+
+# ===========================================
+# SORTING AND FILTERING
+# ===========================================
+
+# Sort directories first, then files
+# When false, sorts everything alphabetically regardless of type
+sort_dirs_first = true
+
+# Show hidden files (starting with '.')
+# When false, hidden files are filtered out
+show_hidden = false
+
+# ===========================================
+# DISPLAY MODES
+# ===========================================
+
+# Use long format display (currently same as column_format)
+# Reserved for future enhanced long format features
+long_format = false
+
+# ===========================================
+# EXAMPLE CONFIGURATIONS
+# ===========================================
+
+# Minimal configuration (only filenames with icons):
+# show_icons = true
+# show_permissions = false
+# show_owner = false
+# show_group = false
+# show_modified = false
+# column_order = icon,name
+
+# Detailed configuration (all information):
+# show_icons = true
+# show_permissions = true
+# show_owner = true
+# show_group = true  
+# show_modified = true
+# use_fuzzy_time = true
+# column_format = true
+# column_order = icon,permissions,owner,group,modified,name
+
+# Simple list format:
+# column_format = false
+# show_icons = false
+
+# Show everything including hidden files:
+# show_hidden = true
+# use_fuzzy_time = false  # Use absolute timestamps
+
+# Custom column order (time first):
+# column_order = icon,modified,permissions,owner,group,name 
