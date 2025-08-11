@@ -61,7 +61,7 @@ The modification time column displays human-readable durations:
 - **"unknown"** - unable to read modification time
 
 ## Dependencies
-- **Standard Library Only**: No external dependencies required
+- **unicode-width (0.1.x)**: Compute terminal display width of Unicode glyphs to align icon column consistently
 - **Unix-specific**: Uses `std::os::unix::fs` for file metadata
 - **Cross-platform terminal**: ANSI escape codes work on all modern terminals
 - **Nerd Fonts**: Requires Nerd Fonts patched font for proper glyph display
@@ -212,6 +212,7 @@ No database required for this file listing utility.
 ✅ **Enhanced Column Alignment**
 - Improved column formatting with left-alignment for better readability
 - Consistent spacing and padding across all data columns
+- Icon column now uses `unicode-width` to ensure all icons occupy the same terminal width
 - Optimized visual layout for varying content widths
 - Perfect alignment maintained across different directory contents
 

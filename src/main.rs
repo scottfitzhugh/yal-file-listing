@@ -5,6 +5,7 @@ use std::env;
 use std::time::SystemTime;
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
+use unicode_width::UnicodeWidthStr;
 
 /// Configuration settings for the file lister
 #[derive(Debug, Clone)]
@@ -273,7 +274,7 @@ impl FileEntry {
 	}
 	
 	/// Format this entry for display with proper column alignment
-	fn format_display(&self, config: &Config, max_perms_len: usize, max_owner_len: usize, max_group_len: usize, max_modified_len: usize) -> String {
+	fn format_display(&self, config: &Config, max_icon_width: usize, max_perms_len: usize, max_owner_len: usize, max_group_len: usize, max_modified_len: usize) -> String {
 		// Use ANSI escape codes for colors
 		let (name_color, reset) = if self.is_dir {
 			("\x1b[34;1m", "\x1b[0m") // Blue bold for directories
@@ -283,20 +284,20 @@ impl FileEntry {
 		
 		if config.column_format {
 			// Column format with alignment
-			self.format_columns(config, max_perms_len, max_owner_len, max_group_len, max_modified_len, &name_color, &reset)
+			self.format_columns(config, max_icon_width, max_perms_len, max_owner_len, max_group_len, max_modified_len, &name_color, &reset)
 		} else {
 			// Simple list format
-			self.format_simple(config, &name_color, &reset)
+			self.format_simple(config, max_icon_width, &name_color, &reset)
 		}
 	}
 	
 	/// Format entry in column layout
-	fn format_columns(&self, config: &Config, max_perms_len: usize, max_owner_len: usize, max_group_len: usize, max_modified_len: usize, name_color: &str, reset: &str) -> String {
+	fn format_columns(&self, config: &Config, max_icon_width: usize, max_perms_len: usize, max_owner_len: usize, max_group_len: usize, max_modified_len: usize, name_color: &str, reset: &str) -> String {
 		let mut parts = Vec::new();
 		
 		for column in &config.column_order {
 			match column.as_str() {
-				"icon" if config.show_icons => parts.push(format!("{}  ", self.icon)),
+				"icon" if config.show_icons => parts.push(pad_to_display_width(self.icon, max_icon_width)),
 				"permissions" if config.show_permissions => parts.push(format!("\x1b[33m{:<width$}\x1b[0m", self.permissions, width = max_perms_len)),
 				"owner" if config.show_owner => parts.push(format!("\x1b[32m{:<width$}\x1b[0m", self.owner, width = max_owner_len)),
 				"group" if config.show_group => parts.push(format!("\x1b[36m{:<width$}\x1b[0m", self.group, width = max_group_len)),
@@ -310,12 +311,12 @@ impl FileEntry {
 	}
 	
 	/// Format entry in simple list layout
-	fn format_simple(&self, config: &Config, name_color: &str, reset: &str) -> String {
+	fn format_simple(&self, config: &Config, max_icon_width: usize, name_color: &str, reset: &str) -> String {
 		let mut parts = Vec::new();
 		
 		for column in &config.column_order {
 			match column.as_str() {
-				"icon" if config.show_icons => parts.push(self.icon.to_string()),
+				"icon" if config.show_icons => parts.push(pad_to_display_width(self.icon, max_icon_width)),
 				"permissions" if config.show_permissions => parts.push(format!("\x1b[33m{}\x1b[0m", self.permissions)),
 				"owner" if config.show_owner => parts.push(format!("\x1b[32m{}\x1b[0m", self.owner)),
 				"group" if config.show_group => parts.push(format!("\x1b[36m{}\x1b[0m", self.group)),
@@ -326,6 +327,18 @@ impl FileEntry {
 		}
 		
 		parts.join(" ")
+	}
+}
+
+/// Pad a string with spaces to reach a target terminal display width
+fn pad_to_display_width(text: &str, target_width: usize) -> String {
+	let current_width = UnicodeWidthStr::width(text);
+	if current_width >= target_width {
+		// Ensure at least original text (no truncation), rely on outer separator for spacing
+		text.to_string()
+	} else {
+		let pad_spaces = target_width - current_width;
+		format!("{}{}", text, " ".repeat(pad_spaces))
 	}
 }
 
@@ -496,6 +509,14 @@ fn main() -> std::io::Result<()> {
 	println!();
 	
 	// Calculate column widths for perfect alignment (only if using column format)
+	let max_icon_width: usize = if config.show_icons {
+		file_entries
+			.iter()
+			.map(|entry| UnicodeWidthStr::width(entry.icon))
+			.max()
+			.unwrap_or(0)
+	} else { 0 };
+
 	let (max_perms_len, max_owner_len, max_group_len, max_modified_len) = if config.column_format {
 		(
 			if config.show_permissions { 
@@ -517,7 +538,17 @@ fn main() -> std::io::Result<()> {
 	
 	// Display entries according to configuration
 	for entry in &file_entries {
-		println!("{}", entry.format_display(&config, max_perms_len, max_owner_len, max_group_len, max_modified_len));
+		println!(
+			"{}",
+			entry.format_display(
+				&config,
+				max_icon_width,
+				max_perms_len,
+				max_owner_len,
+				max_group_len,
+				max_modified_len
+			)
+		);
 	}
 	
 	Ok(())
